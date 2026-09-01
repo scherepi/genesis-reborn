@@ -1,0 +1,168 @@
+/* styles for guac's genesis revamp, began 08/14/2026 */
+
+/* font imports */
+@import urL('https://fonts.googleapis.com/css2?family=Handjet:wght,ELSH@100..900,2&display=swap');
+/* fine... i guess i'll try responsive web design... */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    body {
+        background-color: black;
+    }
+}
+
+@media only screen and (min-width: 600px) {
+
+}
+
+@media only screen and (min-width: 768px) {
+
+}
+
+@media only screen and (min-width: 992px) {
+
+}
+
+@media only screen and (min-width: 1200px) {
+
+}
+
+@media only screen and (min-width: 1440px) {
+    #errordiv {
+        font-size: 30px !important;
+    }
+}
+
+@media only screen and (min-width: 1920px) {
+    #errordiv {
+        font-size: 60px !important;
+    }
+}
+html, body {
+    height: 100%;
+}
+
+body {
+    background: black;
+    overflow: hidden;
+}
+
+#main-body {
+    position: relative;
+    z-index: 1;
+    min-width: 100%;
+    min-height: 100%;
+}
+
+#main-body::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: repeating-linear-gradient(0deg, black, white, black 2%);
+    mask: url("assets/noiseTexture.png") repeat luminance;
+}
+
+#errordiv {
+    z-index: 100;
+    position: fixed;
+    top: 20%;
+    left: 15%;
+    width: 70%;
+    height: 60%;
+    background: rgba(200, 0, 0, 0.6);
+    border: 0.1em solid black;
+    filter: drop-shadow(15px 15px white);
+    
+    /* defined here so that em works for children */
+    font-size: 20px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+#errordiv::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: transparent;
+    filter: drop-shadow(15px 15px white);
+    pointer-events: none;
+}
+
+#errordiv h3, #errordiv p {
+    filter: drop-shadow(2px 2px white);
+}
+
+#errordiv h3 {
+    font-family: 'Handjet', monospace;
+    font-weight: 600;
+    font-size: 1.5em;
+    flex-grow: 1;
+    text-align: center;
+}
+
+#errordiv p {
+    font-family: 'Handjet', monospace;
+    font-weight: 300;
+    font-size: 0.75em;
+    text-align: center;
+    justify-self: center;
+    flex-grow: 2;
+}
+
+#errordiv div {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+#errordiv div button {
+    font-family: 'Handjet', monospace;
+    font-weight: 500;
+    font-size: 1em;
+    text-align: center;
+    padding: 15px;
+    width: fit-content;
+    border: 1px solid white;
+    background: rgba(200, 0, 0, 0.8);
+}
+
+#toolbar {
+    background: linear-gradient(0deg, rgb(46, 46, 46), rgb(118, 107, 107), rgb(113, 112, 112));
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 6vh;
+}
+
+#eyebutton {
+    width: 128px;
+    height: 100%;
+    aspect-ratio: 1/1;
+}
+
+#eyedialog {
+    background: rgb(118, 107, 107);
+
+}
+
+
+#tabcontainer .tab {
+
+}

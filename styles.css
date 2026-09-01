@@ -1,0 +1,56 @@
+/* styles for guac's genesis revamp, began 08/14/2026 */
+
+/* fine... i guess i'll try responsive web design... */
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    body {
+        background-color: black;
+    }
+    #angel-unwound {
+        display: hidden;
+    }
+}
+
+@media only screen and (min-width: 600px) {
+
+}
+
+@media only screen and (min-width: 768px) {
+
+}
+
+@media only screen and (min-width: 992px) {
+
+}
+
+@media only screen and (min-width: 1200px) {
+
+}
+
+@media only screen and (min-width: 1440px) {
+
+}
+
+@media only screen and (min-width: 1920px) {
+    
+}
+body {
+    background: repeating-linear-gradient(45deg, rgb(89, 86, 86), white 2%);
+}
+
+body::backdrop {
+    background: black;
+}
+
+#angel-unwound {
+    position: fixed;
+    bottom: 0px;
+    left: 10%;
+}

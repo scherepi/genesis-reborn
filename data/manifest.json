@@ -1,0 +1,16 @@
+{
+    "applications": [
+        {
+            "title": "Wormhole",
+            "iconurl": "assets/wormhole-icon.png",
+            "appSource": "apps/wormhole.html",
+            "tooltip": "",
+            "options": {
+                "defaultHeight": 300,
+                "defaultWidth": 500,
+                "tileOnDesktop": true,
+                "quitOnClose": false 
+            }
+        }
+    ]
+}

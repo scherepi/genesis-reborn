@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>genesis</title>
+        <link rel="stylesheet" href="styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <!-- removed by script when loading is complete -->
+        <div id="loading-overlay"></div>
+        <div id="main-body">
+            <div id="desktop"></div>
+            <div id="toolbar">
+                <!-- todo: animate this eye to blink -->
+                <img id="eyebutton" popovertarget="eyedialog" src="assets/eyebutton.png">
+                <div id="tabcontainer">
+                    <div class="tab">testtab</div>
+                </div>
+            </div>
+            <div id="eyedialog" popover>
+                <p id="about-trigger">about</p>
+                <p id="shutdown-trigger">shutdown</p>
+            </div>
+        </div>
+        <script src="os.js"></script>
+    </body>
+</html>
