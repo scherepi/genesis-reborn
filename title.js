@@ -2,5 +2,3 @@
 // hack club rocks
 
 console.log("reborn at last")
-
-document.getElementById("")
