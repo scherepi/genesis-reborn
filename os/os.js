@@ -278,6 +278,9 @@ class OSWindow {
         // customStyle is an array where the first index is the key and the second value is the value for a CSS rule
         this.#element.style[customStyle[0]] = customStyle[1];
     }
+    populateFrame(sourceURL) {
+        document.getElementById(`frame-${this.#id}`).src = sourceURL;
+    }
 }
 
 class OSApplication {
