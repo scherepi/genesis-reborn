@@ -23,8 +23,10 @@ async function main() {
         await privError("you're not in a secure context, so we can't do crypto stuff...");
         return;
     }
+
+    let manifest;
     try {
-        const manifest = await (await fetch("data/manifest.json")).json()
+        manifest = await (await fetch("data/manifest.json")).json()
     } catch (errorLoading) {
         console.log(errorLoading);
         await loadError(errorLoading);
@@ -35,7 +37,8 @@ async function main() {
     let appManager = new ApplicationManager();
     let windowManager = new WindowManager(manifest["options"]["windowManager"]);
 
-    for (application in manifest["applications"]) {
+    for (let i = 0; i < manifest["applications"].length; i++) {
+        let application = manifest["applications"][i]
         try {
             appManager.loadApp(application)
         } catch (e) {
@@ -43,12 +46,19 @@ async function main() {
         }
     }
 
-    document.getElementById("eyebutton").addEventListener("toggle", () => { console.log("eyebutton triggered")})
+    let eyeButton = document.getElementById("eyebutton");
+    let eyeDialog = document.getElementById("eyedialog");
+
+    // DOM attachments and interactivity
+    eyeButton.addEventListener("click", () => { 
+        console.log("eyebutton triggered");
+        eyeDialog.showPopover();
+    })
     document.getElementById("about-trigger").addEventListener("click", () => {})
     loadingOverlay.remove();
 }
 
-// called during loading if a privilege isn't detected, replaces the loading overlay with an error window
+
 async function errorPopup(title, message) {
     let errorDiv = document.createElement("div");
     errorDiv.id = "errordiv"
@@ -66,10 +76,12 @@ async function errorPopup(title, message) {
     reloadButton.addEventListener("click", () => { window.location.reload(); })
     reloadDiv.appendChild(reloadButton);
 } 
+// called during loading if a privilege isn't detected, replaces the loading overlay with an error window
 async function privError(reason) {
     console.log(`loading threw privilege error: ${reason}`);
     errorPopup("privilege error:", reason)
 }
+// called during loading if a resource (like manifest or an app's source) fails to load
 async function loadError(reason) {
     console.log(`loading threw loading error: ${reason}`);
     errorPopup("loading error:", reason);
@@ -241,3 +253,5 @@ class OSApplication {
     }
     
 }
+
+main();
