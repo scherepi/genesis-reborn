@@ -33,9 +33,9 @@ async function main() {
         return;
     }
 
-
-    let appManager = new ApplicationManager();
     let windowManager = new WindowManager(manifest["options"]["windowManager"]);
+    let appManager = new ApplicationManager(windowManager);
+    
 
     for (let i = 0; i < manifest["applications"].length; i++) {
         let application = manifest["applications"][i]
@@ -88,12 +88,13 @@ async function loadError(reason) {
 }
 
 class ApplicationManager {
-    #numberApplications; // the number of applications currently open
-    #applicationList;
+    #windowManager;         // link to the windowManager so that we can provide it to applications
+    #numberApplications;    // the number of applications currently open
+    #applicationList;       // object binding applications to their IDs
     #expectedFields;
     constructor() {
         this.#numberApplications = 0;
-        this.#applicationList = [];
+        this.#applicationList = {};
         // these expected fields can be empty, they just can't be missing
         this.#expectedFields = ["title", "iconurl", "appSource", "tooltip", "options"]
     }
@@ -105,6 +106,9 @@ class ApplicationManager {
             }
         }
         this.#numberApplications++;
+        // precompute so we can pass it to the constructor and use it for assignment
+        let newAppID = this.#numberApplications.toString();
+        this.#applicationList[newAppID] = new OSApplication(applicationData)
         this.#applicationList.push(new OSApplication(applicationData));
     }
 }
@@ -284,6 +288,7 @@ class OSWindow {
 }
 
 class OSApplication {
+    #id; // the ID assigned to this application by its ApplicationManager
     #title; // the title of this application
     #iconurl; // URL for the icon corresponding to this application
     #appSource; // the URL for the html that  serves as the source for this app
@@ -293,7 +298,8 @@ class OSApplication {
     #linkedWindows; // a list of window IDs provided by the WindowManager
 
     static numOpen;
-    constructor(title, iconurl, tooltip, options, styles, windowManager) {
+    constructor(id, title, iconurl, tooltip, options, styles, windowManager) {
+        this.#id = id;
         this.#title = title; 
         this.#iconurl = iconurl;
         this.#tooltip = tooltip;
