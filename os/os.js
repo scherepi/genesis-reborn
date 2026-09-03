@@ -93,18 +93,19 @@ class ApplicationManager {
     #expectedFields;
     constructor() {
         this.#numberApplications = 0;
-        this.#applicationList = []
+        this.#applicationList = [];
         // these expected fields can be empty, they just can't be missing
         this.#expectedFields = ["title", "iconurl", "appSource", "tooltip", "options"]
     }
     loadApp(applicationData) {
-        for (field in this.#expectedFields) {
+        for (let i = 0; i < this.#expectedFields.length; i++) {
+            let field = this.#expectedFields[i]
             if (applicationData[field] == undefined) {
                 throw new Error(`application data missing field ${field}`);
             }
         }
         this.#numberApplications++;
-        this.applicationList.push(new OSApplication(applicationData))
+        this.#applicationList.push(new OSApplication(applicationData));
     }
 }
 
@@ -129,6 +130,10 @@ class WindowManager {
     }
     getNumOpen() {
         return this.#numberWindows;
+    }
+    getTopZ() {
+        this.#highestZ++;
+        return this.#highestZ;
     }
     // used by applications to reserve a window from the window manager - they're then made visible with openWindow
     async acquireWindow(app) {
@@ -155,6 +160,7 @@ class WindowManager {
 }
 
 class OSWindow {
+    #windowManager; // pointer to the WindowManager
     #id; // unique id assigned by the WindowManager
     #element; // reference to the associated div
     #visible;
@@ -165,6 +171,7 @@ class OSWindow {
     #position; // 2-int tuple, corresponds to the top-left corner of the window
 
     constructor(windowManager, id, width, height, startingZ, styles, x, y) {
+        this.#windowManager = windowManager
         this.#id = id;
         this.#width = width; // windowmanager will default this if it's not provided
         this.#height = height;
@@ -173,13 +180,61 @@ class OSWindow {
         this.setPosition(x, y);
     }
 
+    // creates, styles, and organizes the relevant DOM element for this logical window, based on the manifest for the application.
     createElement() {
         let windowDiv = document.createElement("div");
         windowDiv.id = this.#id;
+        windowDiv.classList.add("window");
         let windowBar = document.createElement("div");
+        windowBar.classList.add("windowBar");
+        let windowTitle = document.createElement("p");
+        windowTitle.classList.add("windowTitle");
         let closeButton = document.createElement("p");
+        closeButton.classList.add("closeButton");
         let minimizeButton = document.createElement("p");
-        let maximizeButton = document.createElement("p")
+        minimizeButton.innerText = "_";
+        let maximizeButton = document.createElement("p");
+        maximizeButton.innerText = "O";
+        windowBar.appendChild(minimizeButton);
+        windowBar.appendChild(maximizeButton);
+        windowBar.appendChild(closeButton);
+        // apply styles specified in the manifest
+        if (this.#styles["windowStyles"] != undefined) {
+            let windowStyles = Object.keys(this.#styles["windowStyles"])
+            for (let i = 0; i < windowStyles.length; i++) {
+                let styleKey = windowStyles[i];
+                windowDiv.style[styleKey] = this.#styles["windowStyles"][styleKey]
+            }
+        }
+        if (this.#styles["barStyles"] != undefined) {
+            let barStyles = Object.keys(this.#styles["barStyles"]);
+            for (let i = 0; i < barStyles; i++) {
+                let styleKey = barStyles[i];
+                switch (styleKey) {
+                    // if the key corresponds to one of our buttons, interpret it as an object itself and apply all its nested styles to that element
+                    case "closeButton":
+                        let closeButtonStyles = Object.keys(this.#styles["barStyles"]["closeButton"])
+                        for (let i = 0; i < closeButtonStyles.length; i++) {
+                            closeButton.style[closeButtonStyles[i]] = this.#styles["barStyles"]["closeButton"][closeButtonStyles[i]]
+                        }
+                        break;
+                    case "minButton":
+                        let minButtonStyles = Object.keys(this.#styles["barStyles"]["minButton"]);
+                        for (let i = 0; i < minButtonStyles.length; i++) {
+                            minButton.style[minButtonStyles[i]] = this.#styles["barStyles"]["minButton"][minButtonStyles[i]];
+                        }
+                        break;
+                    case "maxButton":
+                        let maxButtonStyles = Object.keys(this.#styles["barStyles"]["maxButton"]);
+                        for (let i = 0; i < maxButtonStyles.length; i++) {
+                            maxButton.style[maxButtonStyles[i]] = this.#styles["barStyles"]["maxButton"][maxButtonStyles[i]]; 
+                        }
+                    default:
+                        // otherwise, apply the style to the bar as a whole
+                        windowBar.style[styleKey] = this.#styles["barStyles"][styleKey]
+                }
+            }
+        }
     }
 
     open() {

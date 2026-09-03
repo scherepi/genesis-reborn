@@ -17,7 +17,7 @@
         },
         "barStyles": {
           "background": "red",
-          "close-button": {
+          "closeButton": {
             "filter": "invert(100%)"
           }
         }

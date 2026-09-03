@@ -159,7 +159,49 @@ body {
 
 #eyedialog {
     background: rgb(118, 107, 107);
+}
 
+.window {
+    display: flex;
+    flex-direction: column;
+}
+.windowBar {
+    display: flex;
+    flex-direction: row;
+}
+
+.windowTitle {
+    justify-self: center;
+    font-family: 'W95FA Regular', monospace;
+    
+}
+
+.windowBar .minButton {
+    content: "_";
+    font-family: monospace;
+    height: 80%;
+    margin-top: 10%;
+    margin-bottom: 10%;
+}
+
+.windowBar .closeButton {
+    content: "X";
+    font-family: monospace;
+    align-self: flex-end;
+    height: 80%;
+    margin-top: 10%;
+    margin-bottom: 10%;
+    margin-left: 2%;
+}
+
+.windowBar .maxButton {
+    content: "O";
+    font-family: monospace;
+    align-self: flex-end;
+    height: 80%;
+    margin-top: 10%;
+    margin-bottom: 10%;
+    margin-left: 2%;
 }
 
 
