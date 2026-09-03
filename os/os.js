@@ -185,19 +185,33 @@ class OSWindow {
         let windowDiv = document.createElement("div");
         windowDiv.id = this.#id;
         windowDiv.classList.add("window");
+
         let windowBar = document.createElement("div");
         windowBar.classList.add("windowBar");
+
         let windowTitle = document.createElement("p");
         windowTitle.classList.add("windowTitle");
+
         let closeButton = document.createElement("p");
         closeButton.classList.add("closeButton");
+
         let minimizeButton = document.createElement("p");
-        minimizeButton.innerText = "_";
+        minimizeButton.classList.add("minButton");
+
         let maximizeButton = document.createElement("p");
-        maximizeButton.innerText = "O";
+        maximizeButton.classList.add("maxButton");
+
         windowBar.appendChild(minimizeButton);
-        windowBar.appendChild(maximizeButton);
         windowBar.appendChild(closeButton);
+        windowBar.appendChild(maximizeButton);
+
+        let windowBody = document.createElement("div")
+        windowBody.classList.add("windowBody");
+        // create the iframe that will be populated with the application source
+        let bodyFrame = document.createElement("iframe");
+        windowBody.appendChild(bodyFrame);
+        // super important! the iframe's id is frame-{windowID}
+        bodyFrame.id = "frame-" + this.#id;
         // apply styles specified in the manifest
         if (this.#styles["windowStyles"] != undefined) {
             let windowStyles = Object.keys(this.#styles["windowStyles"])

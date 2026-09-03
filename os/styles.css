@@ -173,7 +173,6 @@ body {
 .windowTitle {
     justify-self: center;
     font-family: 'W95FA Regular', monospace;
-    
 }
 
 .windowBar .minButton {
@@ -204,7 +203,18 @@ body {
     margin-left: 2%;
 }
 
+.windowBody {
+    width: 100%;
+    height: auto;
+}
+
+.windowBody iframe {
+    border: none;
+    /* make sure it fills its whole parent div! */
+    width: 100%;
+    height: 100%;
+}
 
 #tabcontainer .tab {
-
+    
 }
