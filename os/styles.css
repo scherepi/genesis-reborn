@@ -142,6 +142,29 @@ body {
     background: rgba(200, 0, 0, 0.8);
 }
 
+#shutdownOverlay {
+    /* todo: apply filters and masks to make this overlay prettier */
+    opacity: 50%;
+    background: black;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000000;
+    transition: height 0.6s;
+    transition: opacity 0.6s;
+}
+
+#shutdownOverlay p {
+    color: white;
+    font-family: monospace;
+}
+
+#shutdownOverlay.activated {
+    height: 100%;
+    opacity: 100%;
+}
+
 /* toolbar and related components' styles */
 
 #toolbar {
@@ -159,13 +182,26 @@ body {
     width: 128px;
     height: 100%;
     aspect-ratio: 1/1;
+    @supports (anchor-name: --x) {
+        anchor-name: --eyebutton;
+    }
 }
 
 #eyedialog {
     background: rgb(118, 107, 107);
-    position: absolute;
-    bottom: 2%;
-    left: 2%;
+    position: fixed;
+    inset: auto; 
+    bottom: 5%;
+    left: 5%;
+    @supports (anchor-name: --x) {
+        position-anchor: --eyebutton;
+        bottom: anchor(top);
+        left: anchor(right);
+    }
+}
+
+#eyedialog p {
+
 }
 
 #tabcontainer {

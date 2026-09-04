@@ -58,6 +58,7 @@ async function main() {
     loadingOverlay.remove();
 }
 
+// popups and window behaviors
 
 async function errorPopup(title, message) {
     let errorDiv = document.createElement("div");
@@ -85,6 +86,20 @@ async function privError(reason) {
 async function loadError(reason) {
     console.log(`loading threw loading error: ${reason}`);
     errorPopup("loading error:", reason);
+}
+
+// trigger the shutdown animation and then close the tab!
+async function shutdown() {
+    let shutdownOverlay = document.createElement("div");
+    shutdownOverlay.id = "shutdownOverlay"
+    let shutdownText = document.createElement("p");
+    shutdownOverlay.appendChild(shutdownText);
+    document.body.appendChild(shutdownOverlay);
+    // add the activated class to trigger the CSS transition that makes it blanket the screen
+    shutdownOverlay.classList.add("activated");
+    setTimeout(() => {
+        shutdownText.innerText = "thanks for being here."
+    }, 600)
 }
 
 class ApplicationManager {
