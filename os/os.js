@@ -92,7 +92,8 @@ class ApplicationManager {
     #numberApplications;    // the number of applications currently open
     #applicationList;       // object binding applications to their IDs
     #expectedFields;
-    constructor() {
+    constructor(windowManager) {
+        this.#windowManager = windowManager;
         this.#numberApplications = 0;
         this.#applicationList = {};
         // these expected fields can be empty, they just can't be missing
@@ -108,8 +109,12 @@ class ApplicationManager {
         this.#numberApplications++;
         // precompute so we can pass it to the constructor and use it for assignment
         let newAppID = this.#numberApplications.toString();
-        this.#applicationList[newAppID] = new OSApplication(applicationData)
-        this.#applicationList.push(new OSApplication(applicationData));
+        let newApp = new OSApplication(this.#windowManager, newAppID, applicationData.title, applicationData.iconurl, applicationData.tooltip, applicationData.options, applicationData.styles)
+        this.#applicationList[newAppID] = newApp;
+        return newApp;
+    }
+    unloadApp(appID) {
+        delete object[appID]
     }
 }
 
@@ -298,14 +303,15 @@ class OSApplication {
     #linkedWindows; // a list of window IDs provided by the WindowManager
 
     static numOpen;
-    constructor(id, title, iconurl, tooltip, options, styles, windowManager) {
+    constructor(windowManager, id, title, iconurl, tooltip, options, styles) {
         this.#id = id;
         this.#title = title; 
         this.#iconurl = iconurl;
         this.#tooltip = tooltip;
         this.#options = options;
         this.#styles = styles
-        this.#linkedWindows[0] = windowManager.acquireWindow()
+        this.#linkedWindows = [];
+        this.#linkedWindows[0] = windowManager.acquireWindow(this);
     }
 
     // standard getters
