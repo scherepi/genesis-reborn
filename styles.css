@@ -25,7 +25,7 @@ body::before {
 #genesis-logo {
     position: fixed;
     z-index: 1;
-    left: 16.6666%;
+    left: 24%;
     top: 10%;
 }
 
@@ -34,7 +34,7 @@ body::before {
     display: inline-flex;
     z-index: 3;
     right: 30%;
-    top: 50%;
+    top: 65%;
     background: rgba(0, 0, 0, 0.4);
     border: solid black 1px;
     text-align: center;
@@ -43,7 +43,7 @@ body::before {
     width: 24em;
     height: 15%;
     transform: skew(-30deg) rotateZ(-15deg) rotateY(-20deg);
-
+    z-index: 5;
 }
 
 #enter p {
@@ -64,20 +64,21 @@ body::before {
     transform: scale(0.4);
 }
 
-@keyframes huerotate {
-    0% {
-        backdrop-filter: hue-rotate(0deg);
+@keyframes follower-effect {
+    from {
+        backdrop-filter: brightness(70%);
     }
-    100% {
-        backdrop-filter: hue-rotate(360deg);
+    to {
+        backdrop-filter: brightness(30%);
     }
 }
 
 #follower {
     z-index: 30;
     position: fixed;
-    animation: 3s ease-in infinite huerotate;
-    background: rgba(20, 20, 20, 0.1);
+    animation: 3s ease-in infinite alternate follower-effect;
+    background: radial-gradient(circle, rgba(20, 20, 20, 0.1) 0%, transparent 80%);
+    mask: radial-gradient(circle, black 40%, transparent 70%);
     border-radius: 100%;
     width: var(--follower-size);
     height: var(--follower-size);
@@ -87,6 +88,7 @@ body::before {
 #footer {
     position: fixed;
     bottom: 2%;
+    z-index: 5;
     right: 15%;
 }
 #footer p {
@@ -104,6 +106,24 @@ body::before {
 }
 #footer p:hover {
     border-radius: 5%;
+}
+
+.blinkeye {
+    border: 3px solid red;
+    position: fixed;
+    z-index: 4;
+    opacity: 0;
+    transition: 
+        opacity 2s,
+        filter 800ms;
+}
+
+.blinkeye.trigger {
+    opacity: 1;
+}
+
+.blinkeye:hover {
+    filter: invert(1);
 }
 
 @media only screen and (max-width: 600px) {
