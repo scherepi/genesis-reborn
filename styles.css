@@ -109,7 +109,6 @@ body::before {
 }
 
 .blinkeye {
-    border: 3px solid red;
     position: fixed;
     z-index: 4;
     opacity: 0;
