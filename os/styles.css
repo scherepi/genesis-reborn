@@ -256,6 +256,7 @@ body {
     align-items: center;
     background: rgb(70, 70, 70);
     position: relative;
+    touch-action: none;
 }
 
 .windowTitle {
@@ -339,6 +340,7 @@ body {
     justify-content: center;
     /* position in the grid is computed by DesktopManager in os.js */
     transition: all 0.2s;
+    touch-action: manipulation;
 }
 
 .desktopTile.active {
@@ -365,7 +367,7 @@ body {
 @media only screen and (max-width: 600px) {
     body {
         background-color: black;
-        
+
     }
 }
 
