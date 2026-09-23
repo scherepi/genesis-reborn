@@ -12,9 +12,9 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    
     /* CSS variables! */
-    /*
-    */
+    
     /* tab backgrounds - normal, minimized, and active */
     --tab-normal: rgba(240, 240, 240, 0.5);
     --tab-minimized: rgba(240, 240, 240, 0.3);
@@ -28,39 +28,6 @@
     }
 }
 
-@media only screen and (max-width: 600px) {
-    body {
-        background-color: black;
-    }
-}
-
-@media only screen and (min-width: 600px) {
-
-}
-
-@media only screen and (min-width: 768px) {
-
-}
-
-@media only screen and (min-width: 992px) {
-
-}
-
-@media only screen and (min-width: 1200px) {
-
-}
-
-@media only screen and (min-width: 1440px) {
-    #errordiv {
-        font-size: 30px !important;
-    }
-}
-
-@media only screen and (min-width: 1920px) {
-    #errordiv {
-        font-size: 60px !important;
-    }
-}
 html, body {
     height: 100%;
 }
@@ -384,6 +351,7 @@ body {
 
 }
 */
+
 .tile-text {
     width: fit-content;
     align-self: center;
@@ -392,4 +360,39 @@ body {
     background-color: rgba(0,0,0, 0.5);
     font-family: monospace;
     font-size: 1.25em;
+}
+
+@media only screen and (max-width: 600px) {
+    body {
+        background-color: black;
+        
+    }
+}
+
+@media only screen and (min-width: 600px) {
+
+}
+
+@media only screen and (min-width: 768px) {
+
+}
+
+@media only screen and (min-width: 992px) {
+
+}
+
+@media only screen and (min-width: 1200px) {
+
+}
+
+@media only screen and (min-width: 1440px) {
+    #errordiv {
+        font-size: 30px !important;
+    }
+}
+
+@media only screen and (min-width: 1920px) {
+    #errordiv {
+        font-size: 60px !important;
+    }
 }
