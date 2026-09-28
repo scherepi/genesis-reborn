@@ -7,6 +7,7 @@
 // number of [rows, columns] for the desktop grid - consts now, may be responsively computed (or adjusted in settings!) later
 const desktopCols = 8;
 const desktopRows = 4;
+const folderIconURL = "assets/folder-icon.png";
 
 // declaring our Managers outside of main() so they can be accessed from the console
 let windowManager;
@@ -46,7 +47,7 @@ async function main() {
         return;
     }
 
-    windowManager = new WindowManager(manifest["options"]["windowManager"]);
+    windowManager = new WindowManager(manifest["options"]["windowManager"], manifest["options"]["folders"]);
     appManager = new ApplicationManager(windowManager);
     windowManager.bindAppManager(appManager);
     desktopManager = new DesktopManager(windowManager);
@@ -135,6 +136,13 @@ async function markSynced(windowID) {
     windowManager.closeWindow(windowID);
 }
 
+// general utility function for hashing, used for generating IDs with unique values 
+async function getHash(value) {
+    let hash = await crypto.subtle.digest("SHA-256", (new TextEncoder).encode(value))
+    let hashHex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("")
+    return hashHex;
+}
+
 class ApplicationManager {
     #windowManager;         // link to the windowManager so that we can provide it to applications
     #numberApplications;    // the number of applications currently open
@@ -157,7 +165,7 @@ class ApplicationManager {
         }
         this.#numberApplications++;
         // precompute so we can pass it to the constructor and use it for assignment
-        let newAppID = (await this.hashTitle(applicationData.title)).slice(0, 7);
+        let newAppID = (await getHash(applicationData.title)).slice(0, 7);
         let newApp = new OSApplication(this.#windowManager, newAppID, applicationData.title, applicationData.iconurl, applicationData.appSource, applicationData.tooltip, applicationData.options, applicationData.styles)
         // open the hackatime sync window if the window doesn't remember hackatime being synced
         if (newApp.getTitle() == "Hackatime Sync" && window.localStorage.getItem("hackatimeSynced") == null) { newApp.openWindows(this.#windowManager); }
@@ -173,16 +181,8 @@ class ApplicationManager {
         // provides the DesktopManager with all the relevant application data it needs to populate the desktop
         Object.entries(this.#applicationList).forEach((app) => {
             console.debug(`app is type: ${typeof app}`)
-            desktopManager.populate(app[1]);
+            desktopManager.populate(DesktopItem.fromApp(app[1], this.#windowManager));
         })
-    }
-
-    // returns the hex representation of an app's title after going through a SHA-256 hash.
-    // used to generate IDs for windows and applications!
-    async hashTitle(title) {
-        let titleHash = await crypto.subtle.digest("SHA-256", (new TextEncoder).encode(title))
-        let titleHashHex = Array.from(new Uint8Array(titleHash)).map(b => b.toString(16).padStart(2, "0")).join("")
-        return titleHashHex;
     }
 
     // utility function to get an app from its ID
@@ -206,7 +206,8 @@ class WindowManager {
     #globalDefaultWidth; // the global default width for windows when created, as configured in the manifest.json file
     #globalDefaultHeight; // the global default height for windows when they're created 
     #highestZ; // the z-index for the current highest-stacked window
-    constructor(options) {
+    #folderStyles;
+    constructor(options, folderOptions) {
         this.#numberWindows = 0;
         this.#windowList = new Map();
         // options computed at load time based on screen dimensions
@@ -214,6 +215,8 @@ class WindowManager {
         else { this.#globalDefaultWidth = 500}
         if (options["defaultWindowHeight"] != undefined) { this.#globalDefaultHeight = options["defaultWindowHeight"]; }
         else { this.#globalDefaultHeight = 300}
+        if (folderOptions != undefined && folderOptions["styles"] != undefined) { this.#folderStyles = folderOptions["styles"]; }
+        else { this.#folderStyles = {}; }
         this.#highestZ = 10; // to provide a little bit of allowance for elements behind and underneath
     }
     getWindows() {
@@ -252,7 +255,7 @@ class WindowManager {
         this.#numberWindows += 1;
         // probably the most complicated bit of JavaScript in this whole file - just uses SHA-256 to create a unique hash from the app's title and converts it to hex to be cleanly represented
         // before this i was converting it to UTF-8 using TextDecoder but that produced a bunch of diamonds and garbage
-        let titleHashHex = await this.#appManager.hashTitle(app.getTitle())
+        let titleHashHex = await getHash(app.getTitle())
         let windowID = titleHashHex.slice(0, 7) + "-" + (this.#numberWindows).toString()
         console.debug(`WM: ${app.getTitle()} got window ID ${windowID}`)
         let defaultWidth = this.#globalDefaultWidth;
@@ -266,27 +269,43 @@ class WindowManager {
         let newWindow = new OSWindow(this, windowID, app.getTitle(), defaultWidth, defaultHeight, startingZ, app.getStyles(), window.innerWidth / 3, window.innerHeight / 3);
         this.#windowList.set(windowID, newWindow);
         await newWindow.populateFrame(app.getSource());
-
-        // make the tab for it in the task bar at the bottom
-        // TODO: add support for tab styling
+        this.#createTab(newWindow, app.getTitle(), app.getTooltip(), app.getIcon());
+        return newWindow;
+    }
+    acquireFolderWindow(folderID, name, contents) {
+        console.debug(`WM: building window for folder ${folderID}`)
+        this.#numberWindows += 1;
+        this.#highestZ++;
+        let newWindow = new FolderWindow(contents, this, folderID, name, this.#globalDefaultWidth, this.#globalDefaultHeight, this.#highestZ, this.#folderStyles, window.innerWidth / 3, window.innerHeight / 3);
+        this.#windowList.set(folderID, newWindow);
+        this.#createTab(newWindow, name, name, folderIconURL);
+        return newWindow;
+    }
+    openFolder(folderID, name, contents) {
+        let folderWindow = this.#windowList.get(folderID);
+        if (folderWindow == undefined) { folderWindow = this.acquireFolderWindow(folderID, name, contents); }
+        folderWindow.open();
+    }
+    // make the tab for a window in the task bar at the bottom
+    // TODO: add support for tab styling
+    #createTab(targetWindow, title, tooltip, iconurl) {
         let newTab = document.createElement("div");
-        newTab.title = app.getTooltip();
-        newTab.id = `tab-${windowID}`;
+        newTab.title = tooltip;
+        newTab.id = `tab-${targetWindow.getId()}`;
         newTab.classList.add("tab");
         let tabText = document.createElement("p");
-        tabText.innerText = app.getTitle();
+        tabText.innerText = title;
         let tabIcon = document.createElement("img");
-        tabIcon.src = app.getIcon();
+        tabIcon.src = iconurl;
         newTab.appendChild(tabIcon);
         newTab.appendChild(tabText);
         document.getElementById("tabcontainer").appendChild(newTab);
-        newTab.addEventListener("click", () => { 
-            newWindow.open();
+        newTab.addEventListener("click", () => {
+            targetWindow.open();
             // mark this tab as active and remove the tag from any other tab that has it
             document.querySelectorAll(".tab").forEach((tab) => { tab.classList.remove("active"); });
             newTab.classList.add("active");
         });
-        return newWindow;
     }
     openWindow(id) {
         this.#windowList[id].open();
@@ -298,7 +317,7 @@ class WindowManager {
         // remove the DOM element for the relevant window
         document.getElementById(id).remove();
         // use the bound ApplicationManager to let the linked app know its window has been closed
-        if (this.#appManager != undefined) {
+        if (this.#appManager != undefined && !id.startsWith("folder-")) {
             if (!this.#appManager instanceof ApplicationManager) {
                 console.error(`WM: somehow bound to invalid app manager`)
             } 
@@ -306,7 +325,6 @@ class WindowManager {
         }
         this.#windowList.delete(id) ? console.debug(`WM: deleted window ${id}`) : console.error(`WM: asked to delete a window that does not exist`);
     }
-
 }
 
 class DesktopManager {
@@ -314,6 +332,7 @@ class DesktopManager {
     #grid;          // 2D array: string[rows][cols]  
     #nextPos;       // int tuple, tracks the next position to be populated
     #gridElement;   // pointer to the actual DOM element
+    #folderMap;     // maps folders' IDs to their contents (string -> DesktopItem[]) 
     constructor(windowManager) {
         // bind our windowManager
         windowManager instanceof WindowManager ? this.#windowManager = windowManager : console.error("DM: asked to bind invalid WM"); 
@@ -327,6 +346,7 @@ class DesktopManager {
         this.#gridElement = document.getElementById("desktop-grid");
         this.#gridElement.style.gridTemplateColumns = `repeat(${desktopCols},1fr)`
         this.#gridElement.style.gridTemplateRows = `repeat(${desktopRows}, 1fr)`
+        this.#folderMap = new Map();
     }
 
     #moveNext() {
@@ -345,53 +365,106 @@ class DesktopManager {
         }
     }
 
-    populate(OSapp) {
-        // the closest thing we can do to a type check in stupid normal JavaScript
-        try {
-            OSapp.getTitle();
-        } catch (TypeError) {
-            console.error("desktop manager was asked to populate a non-application");
-            return;
-        }
-        
+    populate(desktopItem) {
         // set its value in the grid!
         let nextX = this.#nextPos[0];
         let nextY = this.#nextPos[1];
-        this.#grid[nextY][nextX] = OSapp.getTitle();
+        this.#grid[nextY][nextX] = desktopItem.getLabel();
         this.#moveNext()
-
-        // create and configure the relevant DOM element
-        let tileElement = document.createElement("div");
-        // use the HTML title attribute to make the tooltip pop up on mouseover!
-        tileElement.title = OSapp.getTooltip();
-        let tileImg = document.createElement("img");
-        tileImg.classList.add("tile-img");
-        let tileText = document.createElement("p");
-        tileText.innerText = OSapp.getTitle()
-        tileText.classList.add("tile-text");
-        tileElement.appendChild(tileImg);
-        tileElement.appendChild(tileText);
-        // our grid object is zero-indexed, but the DOM one isn't
-        tileImg.style.gridRow = `${nextX + 1}`;
-        tileImg.style.gridColumn = `${nextY + 1}`;
-        tileImg.src = OSapp.getIcon();
-        tileElement.classList.add("desktopTile")
-
-        tileElement.id = `tile-${OSapp.getId()}`;
-
-        tileElement.addEventListener("click", () => {
-            document.querySelectorAll(".desktopTile").forEach( (tile) => { tile.classList.remove("active") } )
-            tileElement.classList.add('active');
-        })
-
-        tileElement.addEventListener("dblclick", () => {
-            console.debug(`DESKTOP: ${OSapp.getTitle()} double clicked, window should open`);
-            OSapp.openWindows(this.#windowManager);
-        })
-
-        this.#gridElement.appendChild(tileElement);
-        
+        desktopItem.snapPosition(nextX, nextY);
+        this.#gridElement.appendChild(desktopItem.getTile());  
     }
+    // takes a folder's name and contents, returns a unique ID associated with it
+    async registerFolder(name, contents) {
+        if (typeof name != "string") { throw new TypeError("can't register a folder with a non-string name"); }
+        if (!Array.isArray(contents) || !contents.every((item) => { return item instanceof DesktopItem; })) {
+            throw new TypeError("asked to register a folder with invalid contents (must be an array of DesktopItem objects)")
+        }
+        let hashString = name;
+        contents.forEach((item) => { hashString += item.getLabel(); })
+        hashString += Date.now().toString();
+        let folderID = `folder-${(await getHash(hashString)).slice(0, 7)}`;
+        this.#folderMap.set(folderID, contents);
+        // add the folder to the desktop! the constructor for DesktopFolder builds a window as well.
+        this.populate(new DesktopFolder(folderID, this.#windowManager, name, contents));
+        return folderID;
+    }
+}
+
+// Represents an item on the desktop, both logically and in rendered HTML.
+class DesktopItem {
+    #label;             // the label to assign to this tile, usually the name of the associated app
+    #tileElement;       // the actual div element on the desktop for this tile
+    #labelElement;      // the p element that goes under this tile and contains the label text
+    #tileImg;           // the img element that marks this tile - usually the icon for this application
+
+    constructor(label, iconurl, tooltip, tileID, onOpen) {
+        this.#label = label;
+        // create and configure the root DOM element
+        this.#tileElement = document.createElement("div");
+        // use the HTML title attribute to make the tooltip pop up on mouseover!
+        this.#tileElement.title = tooltip;
+        this.#tileImg = document.createElement("img");
+        this.#tileImg.classList.add("tile-img");
+        this.#labelElement = document.createElement("p");
+        this.#labelElement.innerText = label;
+        this.#labelElement.classList.add("tile-text");
+        this.#tileElement.appendChild(this.#tileImg);
+        this.#tileElement.appendChild(this.#labelElement);
+        this.#tileImg.src = iconurl;
+        this.#tileElement.classList.add("desktopTile")
+
+        this.#tileElement.id = tileID;
+
+        this.#tileElement.addEventListener("click", () => {
+            document.querySelectorAll(".desktopTile").forEach( (tile) => { tile.classList.remove("active") } )
+            this.#tileElement.classList.add('active');
+        })
+
+        this.#tileElement.addEventListener("dblclick", onOpen);
+    }
+    static fromApp(OSapp, windowManager) {
+        if (!(OSapp instanceof OSApplication)) { throw new TypeError("attempted to build desktop item from a non-application"); }
+        return new DesktopItem(OSapp.getTitle(), OSapp.getIcon(), OSapp.getTooltip(), `tile-${OSapp.getId()}`, () => {
+            console.debug(`DESKTOP: ${OSapp.getTitle()} double clicked, window should open`);
+            OSapp.openWindows(windowManager);
+        });
+    }
+    // basic accessors
+    getTile() { return this.#tileElement; }
+    getLabel() { return this.#label; }
+    getLabelElement() { return this.#labelElement; }
+    getTileImg() { return this.#tileImg; }
+    setLabel(newVal) { 
+        if (typeof newVal != "string") { throw new TypeError("label must be set to a string value"); }
+        this.#label = newVal; 
+        this.#labelElement.innerText = newVal; 
+    }
+    // snaps our tile to the desktop grid at a certain position - assumes a zero-indexed position given by the desktopManager
+    snapPosition(x, y) { 
+        this.#tileImg.style.gridRow = `${x + 1}`;
+        this.#tileImg.style.gridColumn = `${y + 1}`;
+    }
+}
+
+// Represents a folder on the desktop which can be interacted with.
+class DesktopFolder extends DesktopItem {
+    #id; // a unique ID, hashed from the folder's name and contents, that the DesktopManager uses to keep track of this folder
+    constructor(id, windowManager, name, contents) {
+        // type guards (god, i really wish i'd done this in typescript first)
+        if (typeof name != "string") { throw new TypeError("name provided to folder must be a string"); }
+        if (!Array.isArray(contents) || !contents.every((item) => { return item instanceof DesktopItem })) {
+            throw new TypeError("contents provided to folder constructor must be an array of DesktopItem objects");
+        }
+        // TODO: add dynamic folder image generation
+        super(name, folderIconURL, name, `ftile-${id}`, () => {
+            console.debug(`DESKTOP: folder ${id} double clicked, window should open`);
+            windowManager.openFolder(id, name, contents);
+        });
+        this.#id = id;
+        windowManager.acquireFolderWindow(id, name, contents);
+    }
+    getId() { return this.#id; }
 }
 
 class OSWindow {
@@ -491,14 +564,7 @@ class OSWindow {
             document.querySelectorAll("iframe").forEach((frame) => { frame.style.pointerEvents = "auto"; });
         })
 
-        let windowBody = document.createElement("div") // the body of the window below the top bar, holds the iframe
-        windowBody.classList.add("windowBody");
-        // create the iframe that will be populated with the application source
-        let bodyFrame = document.createElement("iframe");
-        windowBody.appendChild(bodyFrame);
-        windowDiv.appendChild(windowBody);
-        // super important! the iframe's id is frame-{windowID}
-        bodyFrame.id = "frame-" + this.#id;
+        windowDiv.appendChild(this.createBody());
         // apply styles specified in the manifest
         if (this.#styles["windowStyles"] != undefined) {
             let windowStyles = Object.keys(this.#styles["windowStyles"])
@@ -509,7 +575,7 @@ class OSWindow {
         }
         if (this.#styles["barStyles"] != undefined) {
             let barStyles = Object.keys(this.#styles["barStyles"]);
-            for (let i = 0; i < barStyles; i++) {
+            for (let i = 0; i < barStyles.length; i++) {
                 let styleKey = barStyles[i];
                 switch (styleKey) {
                     // if the key corresponds to one of our buttons, interpret it as an object itself and apply all its nested styles to that element
@@ -522,14 +588,15 @@ class OSWindow {
                     case "minButton":
                         let minButtonStyles = Object.keys(this.#styles["barStyles"]["minButton"]);
                         for (let i = 0; i < minButtonStyles.length; i++) {
-                            minButton.style[minButtonStyles[i]] = this.#styles["barStyles"]["minButton"][minButtonStyles[i]];
+                            minimizeButton.style[minButtonStyles[i]] =this.#styles["barStyles"]["minButton"][minButtonStyles[i]];
                         }
                         break;
                     case "maxButton":
                         let maxButtonStyles = Object.keys(this.#styles["barStyles"]["maxButton"]);
                         for (let i = 0; i < maxButtonStyles.length; i++) {
-                            maxButton.style[maxButtonStyles[i]] = this.#styles["barStyles"]["maxButton"][maxButtonStyles[i]]; 
+                            maximizeButton.style[maxButtonStyles[i]] = this.#styles["barStyles"]["maxButton"][maxButtonStyles[i]];
                         }
+                        break;
                     default:
                         // otherwise, apply the style to the bar as a whole
                         windowBar.style[styleKey] = this.#styles["barStyles"][styleKey]
@@ -541,6 +608,17 @@ class OSWindow {
         this.#visible = false;
         this.alignCSS();
         document.getElementById("desktop").appendChild(this.#element);
+    }
+    // the body of the window below the top bar - subclasses override this, but it runs during super() so it can't use their private fields
+    createBody() {
+        let windowBody = document.createElement("div");
+        windowBody.classList.add("windowBody");
+        // create the iframe that will be populated with the application source
+        let bodyFrame = document.createElement("iframe");
+        windowBody.appendChild(bodyFrame);
+        // super important! the iframe's id is frame-{windowID}
+        bodyFrame.id = "frame-" + this.#id;
+        return windowBody;
     }
 
     open() {
@@ -614,6 +692,23 @@ class OSWindow {
     }
     // ID getter - used in filtering in OSApplication.purgeWindow()
     getId() { return this.#id; }
+    getElement() { return this.#element; }
+}
+
+class FolderWindow extends OSWindow {
+    #contents;
+    constructor(contents, windowManager, id, title, width, height, startingZ, styles, x, y) {
+        if (!Array.isArray(contents) || !contents.every((item) => { return item instanceof DesktopItem })) { throw new TypeError("contents passed to folder window should be an array of DesktopItem objects")};
+        super(windowManager, id, title, width, height, startingZ, styles, x, y);
+        this.#contents = contents;
+        let folderBody = this.getElement().querySelector(".folderBody");
+        this.#contents.forEach((item) => { folderBody.appendChild(item.getTile()); })
+    }
+    createBody() {
+        let folderBody = document.createElement("div");
+        folderBody.classList.add("windowBody", "folderBody");
+        return folderBody;
+    }
 }
 
 class OSApplication {

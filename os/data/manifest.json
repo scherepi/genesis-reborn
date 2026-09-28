@@ -91,6 +91,9 @@
     "windowManager": {
       "globalDefaultWidth": 500,
       "globalDefaultHeight": 300
+    },
+    "folders": {
+      "styles": {}
     }
   }
 }

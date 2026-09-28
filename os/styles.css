@@ -348,6 +348,45 @@ body {
     filter: invert();
 }
 
+/* folder windows: a white, sunken icon view that wraps tiles into rows and scrolls vertically */
+.folderBody {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;  /* pack rows at the top instead of spreading them down the window */
+    align-items: flex-start;    /* don't stretch tiles to the row height (overrides .windowBody) */
+    gap: 8px;
+    padding: 8px;
+    flex: 1 1 auto;
+    min-height: 0;              /* otherwise the body grows to fit every tile and the window clips it instead of scrolling */
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: rgb(30, 30, 30);
+    border: 2px inset rgb(70, 70, 70);
+}
+
+.folderBody .desktopTile {
+    /* fixed-size icons like an old OS - resizing the window changes how many fit per row, not their size */
+    flex: 0 0 80px;
+    align-items: center;
+    text-align: center;
+}
+
+.folderBody .tile-img {
+    width: 32px;
+    height: 32px;
+    image-rendering: pixelated;
+}
+
+.folderBody .tile-text {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    color: white;
+    background: none;
+    font-style: normal;
+    font-family: W95, monospace;
+    font-size: 0.9em;
+}
 /* hasn't been used yet!
 .tile-img {
 
