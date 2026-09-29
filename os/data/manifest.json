@@ -33,7 +33,7 @@
     },
     {
       "title": "Time Machine",
-      "iconurl": "assets/time-machine-icon.png",
+      "iconurl": "assets/time-machine-icon2.png",
       "appSource": "./apps/timemachine.html",
       "tooltip": "roadmap for the site :)",
       "options": {},
@@ -64,7 +64,7 @@
     },
     {
       "title": "Multiboot Spec",
-      "iconurl": "assets/multiboot-icon.png",
+      "iconurl": "assets/multiboot-2.png",
       "appSource": "https://mbspec.breynard.net/",
       "tooltip": "Brendan made this simplified Multiboot spec for your bootloaders!",
       "options": {},
@@ -80,7 +80,7 @@
     },
     {
       "title": "lose me money",
-      "iconurl": "assets/fuckme.png",
+      "iconurl": "assets/argh.png",
       "appSource": "https://forms.hackclub.com/bounty",
       "tooltip": "this one's for anson",
       "options": {},
