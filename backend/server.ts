@@ -14,7 +14,7 @@ const server = Bun.serve({
             return Response.json(await projectReq.json(), {headers: corsHeaders})
         },
         "/sync/:username/:project": async req => {
-            const projectCheck = await fetch(`https://hackatime.hackclub.com/api/v1/users/${encodeURIComponent(req.params.username)}/projects/${encodeURIComponent(req.params.project)}`);
+            const projectCheck = await fetch(`https://hackatime.hackclub.com/api/v1/users/${encodeURIComponent(req.params.username)}/project/${encodeURIComponent(req.params.project)}`);
             if (projectCheck.status == 400) { return new Response("bad request, project name is all whitespace or otherwise blank", {status: 400, headers: corsHeaders}); }
             if (projectCheck.status == 403) { return new Response("user's stats aren't public", {status: 403, headers: corsHeaders})}
             if (projectCheck.status == 404) { return new Response("user not found, or project has no data", {status: 404, headers: corsHeaders}); }

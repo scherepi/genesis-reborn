@@ -45,6 +45,14 @@
       }
     },
     {
+      "title": "Hackatime Sync",
+      "iconurl": "assets/htsync-icon.png",
+      "appSource": "./apps/htsync.html",
+      "tooltip": "sync your hackatime project!",
+      "options": {},
+      "styles": {}
+    },
+    {
       "title": "Submit",
       "iconurl": "assets/submit-icon.png",
       "appSource": "https://forms.hackclub.com/genesis-submission",

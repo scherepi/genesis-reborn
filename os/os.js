@@ -129,6 +129,11 @@ async function shutdown() {
     
 }
 
+async function markSynced(windowID) {
+    window.localStorage.setItem("hackatimeSynced", "true");
+    windowManager.closeWindow(windowID);
+}
+
 class ApplicationManager {
     #windowManager;         // link to the windowManager so that we can provide it to applications
     #numberApplications;    // the number of applications currently open
@@ -153,6 +158,8 @@ class ApplicationManager {
         // precompute so we can pass it to the constructor and use it for assignment
         let newAppID = (await this.hashTitle(applicationData.title)).slice(0, 7);
         let newApp = new OSApplication(this.#windowManager, newAppID, applicationData.title, applicationData.iconurl, applicationData.appSource, applicationData.tooltip, applicationData.options, applicationData.styles)
+        // open the hackatime sync window if the window doesn't remember hackatime being synced
+        if (newApp.getTitle() == "Hackatime Sync" && window.localStorage.getItem("hackatimeSynced") == null) { newApp.openWindows(this.#windowManager); }
         this.#applicationList[newAppID] = newApp;
         return newApp;
     }
@@ -180,6 +187,14 @@ class ApplicationManager {
     // utility function to get an app from its ID
     getApp(id) {
         return this.#applicationList[id];
+    }
+
+    findAppId(name) {
+        if (typeof name != "string") { throw new TypeError("Can't find a non-string app ID!"); }
+        // TODO: implement a proper fuzzy search so we're not matching directly
+        Object.values(this.#applicationList).forEach((app) => {
+            if (app.getTitle().toLowerCase().trim() === name.toLowerCase().trim()) { return app; }
+        })
     }
 }
 
@@ -603,6 +618,7 @@ class OSApplication {
     #options; // an options object provided in the JSON
     #styles; // an optional styles object defining custom CSS for this app's windows
     #linkedWindows; // a list of window IDs provided by the WindowManager
+    #initialWindow;
 
     constructor(windowManager, id, title, iconurl, appSource, tooltip, options, styles) {
         this.#id = id;
@@ -613,7 +629,7 @@ class OSApplication {
         this.#options = options;
         this.#styles = styles
         this.#linkedWindows = [];
-        this.registerWindow(windowManager);
+        this.#initialWindow = this.registerWindow(windowManager);
     }
 
     // standard getters
@@ -653,6 +669,7 @@ class OSApplication {
     }
     async openWindows(windowManager) {
         console.debug(`APP${this.#id}: opening windows for application ${this.#title}`);
+        await this.#initialWindow;
         if (this.#linkedWindows.length == 0) { await this.registerWindow(windowManager); }
         this.#linkedWindows.forEach((OSwindow) => { OSwindow.open(); })
     }
