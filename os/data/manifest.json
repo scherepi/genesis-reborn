@@ -49,7 +49,9 @@
       "iconurl": "assets/htsync-icon.png",
       "appSource": "./apps/htsync.html",
       "tooltip": "sync your hackatime project!",
-      "options": {},
+      "options": {
+        "defaultHeight": 300
+      },
       "styles": {}
     },
     {

@@ -37,6 +37,7 @@ const server = Bun.serve({
                     "records": [{
                         "fields": {
                             "Project Name": projectData.name,
+                            "Repository": projectData.repo_url,
                             "Author": req.params.username,
                             "Raw Total Time": projectData.total_seconds,
                         }

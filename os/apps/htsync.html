@@ -7,7 +7,7 @@
         <div id="main">
             <p>sync up your hackatime project! required to get anything from the shop :P</p>
             <input id="username" type="text">
-            <button id="usernamesubmit">get projects</button>
+            <button id="usernamesubmit">get projects</button> <br>
             <label for="projects">projects:</label>
             <select name="projects" id="projectdropdown">
                 <option value="changeme">put your hackatime username in!</option>
@@ -32,7 +32,7 @@
                         }
                         if (projects.status != 200) { console.error(projects); document.getElementById("projectdropdown").querySelector("option").innerText = "uh oh, something went wrong :("; return; }
                         // remove placeholder
-                        document.getElementById("projectdropdown").querySelector("option").remove();
+                        document.getElementById("projectdropdown").replaceChildren();
                         (await projects.json()).projects.forEach((project) => {
                             let e = document.createElement("option")
                             e.value = project;
