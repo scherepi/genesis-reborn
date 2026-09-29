@@ -92,6 +92,7 @@ async function errorPopup(title, message) {
     reloadButton.addEventListener("click", () => { window.location.reload(); })
     reloadDiv.appendChild(reloadButton);
 } 
+
 // called during loading if a privilege isn't detected, replaces the loading overlay with an error window
 async function privError(reason) {
     console.log(`loading threw privilege error: ${reason}`);

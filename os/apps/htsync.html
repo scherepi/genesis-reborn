@@ -1,12 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <style></style>
+        <style>
+            @font-face {
+                font-family: "W95FA";
+                src: url('../assets/W95FA.otf');
+            }
+            #main {
+                flex-direction: column;
+                display: flex;
+                align-items: center;
+            }
+            #main * {
+                font-family: "W95FA", 'monospace';
+            }
+            #main p {
+                text-align: center;
+            }
+            #username {
+                margin-bottom: 1%;
+            }
+        </style>
     </head>
     <body>
         <div id="main">
             <p>sync up your hackatime project! required to get anything from the shop :P</p>
-            <input id="username" type="text">
+            <p>you can find (and set) your hackatime username in <a href="https://hackatime.hackclub.com/my/settings">the settings page on Hackatime!</a></p>
+            <input id="username" type="text" placeholder="your hackatime username!">
             <button id="usernamesubmit">get projects</button> <br>
             <label for="projects">projects:</label>
             <select name="projects" id="projectdropdown">
