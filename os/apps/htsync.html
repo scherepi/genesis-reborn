@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <style></style>
+    </head>
+    <body>
+        <div id="main">
+            <p>sync up your hackatime project! required to get anything from the shop :P</p>
+            <input id="username" type="text">
+            <button id="usernamesubmit">get projects</button> <br>
+            <label for="projects">projects:</label>
+            <select name="projects" id="projectdropdown">
+                <option value="changeme">put your hackatime username in!</option>
+            </select>
+        </div>
+        <script>
+            if (window.localStorage.getItem("hackatimeSynced") != null) {
+                document.getElementById("main").replaceChildren();
+                document.getElementById("main").appendChild(document.createElement("p"))
+                document.getElementById("main").querySelector("p").innerText = "you're already synced!";
+            } else {
+                let hackatimeUsername;
+                let projects;
+                document.getElementById("usernamesubmit").addEventListener("click", async () => {
+                    hackatimeUsername = document.getElementById("username").value
+                    if (hackatimeUsername != "") { 
+                        projects = await fetch(`https://genesis.hackclub.com/backend/getUserProjects/${hackatimeUsername}`); 
+                        if (projects.status == 403) {
+                            document.getElementById("main").querySelector("p").innerText = "you need to enable public stats lookup on Hackatime!"
+                            document.getElementById("main").querySelector("p").style.color = "red";
+                            return;
+                        }
+                        if (projects.status != 200) { console.error(projects); document.getElementById("projectdropdown").querySelector("option").innerText = "uh oh, something went wrong :("; return; }
+                        // remove placeholder
+                        document.getElementById("projectdropdown").replaceChildren();
+                        (await projects.json()).projects.forEach((project) => {
+                            let e = document.createElement("option")
+                            e.value = project;
+                            e.innerText = project;
+                            document.getElementById("projectdropdown").appendChild(e);
+                        })
+                        // create submission button for dropdown
+                        let syncButton = document.createElement("button");
+                        syncButton.innerText = "sync";
+                        syncButton.addEventListener("click", async () => {
+                            let response = await fetch(`https://genesis.hackclub.com/backend/sync/${hackatimeUsername}/${document.getElementById("projectdropdown").value}`);
+                            if (response.status == 200) {
+                                console.log("successfully synced to hackatime!");
+                                // the iframe's id is frame-{windowID}
+                                window.parent.markSynced(window.frameElement.id.slice(6));
+                            } else {
+                                console.error(response);
+                                document.getElementById("main").querySelector('p').innerText = "uh oh, something went wrong trying to sync to airtable :("
+                                return;
+                            }
+                        });
+                        document.getElementById("main").appendChild(syncButton);
+                    }
+                })
+            }
+        </script>
+    </body>
+</html>
