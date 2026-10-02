@@ -87,6 +87,12 @@
       "styles": {}
     }
   ],
+  "folders": [
+    {
+      "name": "Lecture 1",
+      "contents": ["Lil' CPU"]
+    }
+  ],
   "options": {
     "windowManager": {
       "globalDefaultWidth": 500,
