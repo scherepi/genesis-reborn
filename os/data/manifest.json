@@ -85,12 +85,24 @@
       "tooltip": "this one's for anson",
       "options": {},
       "styles": {}
+    },
+    {
+      "title": "Mini-project Submission Form",
+      "iconurl": "assets/miniproject.png",
+      "appSource": "https://forms.hackclub.com/genesis-mini1",
+      "tooltip": "submit your Assembly CLI here!",
+      "options": {},
+      "styles": {}
     }
   ],
   "folders": [
     {
       "name": "Lecture 1",
       "contents": ["Lil' CPU"]
+    },
+    {
+      "name": "Lecture 2",
+      "contents": ["Mini-project Submission Form"]
     }
   ],
   "options": {
