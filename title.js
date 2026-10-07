@@ -30,6 +30,10 @@ document.getElementById("enter").addEventListener("click", (ev) => {
     window.location.assign("/os/")
 })
 
+document.getElementById("hc-flag").addEventListener("click", (ev) => {
+    window.open("https://hackclub.com", "_blank");
+})
+
 let eyes = 0;
 
 let eyeblink = (x, y, angle) => {
