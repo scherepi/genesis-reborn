@@ -263,14 +263,14 @@ body {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    font-family: 'W95FA Regular', monospace;
+    font-family: 'W95', monospace;
     background: none;
     color: black;
     text-overflow: ellipsis;
 }
 
 .windowBar .windowButton {
-    padding: 1%;
+    padding: 0;
     background: rgba(255, 255, 255, 0.8);
     border: solid 1px black;
     border-radius: 15%;
